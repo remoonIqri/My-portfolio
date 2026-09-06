@@ -242,7 +242,7 @@ elif menu == "About":
     with col1:
         img_url = profile_data.get("profile_image")
         if img_url:
-            st.image(img_url, use_column_width=True)
+            st.image(img_url, use_container_width=True)
         st.markdown(f"**Location:** {profile_data.get('location')}")
         st.markdown(f"**Status:** {profile_data.get('experience_years')}")
         
