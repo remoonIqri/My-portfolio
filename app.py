@@ -236,7 +236,7 @@ if menu == "Home":
 # ==========================================
 # SKILLS PAGE
 # ==========================================
-elif menu == "Skills":
+elif menu == "skills":
     st.title("Skills & Competencies")
     skills = fetch_data("skills")
     if not skills:
