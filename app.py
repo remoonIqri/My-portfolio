@@ -80,6 +80,28 @@ def update_profile(data):
         st.error(f"Error updating profile: {e}")
         return False
 
+def insert_data(table_name, data):
+    if not supabase:
+        return False
+    try:
+        supabase.table(table_name).insert(data).execute()
+        st.cache_data.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error inserting into {table_name}: {e}")
+        return False
+
+def delete_data(table_name, item_id):
+    if not supabase:
+        return False
+    try:
+        supabase.table(table_name).delete().eq("id", item_id).execute()
+        st.cache_data.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error deleting from {table_name}: {e}")
+        return False
+
 # ==========================================
 # STYLING
 # ==========================================
@@ -145,7 +167,6 @@ profile_data = get_profile()
 st.sidebar.title(profile_data.get("name", "Portfolio"))
 st.sidebar.caption(profile_data.get("title", ""))
 
-# Navigation Option (Areas of Interest অপশন বাদ দেওয়া হয়েছে)
 menu = st.sidebar.radio(
     "Navigation",
     ["Home", "Skills", "Projects", "Experience", "Learning Journey", "Contact", "Admin Panel"]
@@ -234,7 +255,6 @@ elif menu == "Skills":
     st.title("Skills & Competencies")
     skills = fetch_data("skills")
     
-    # Supabase-এ টেবিলে ডেটা না থাকলে লোকাল ডেটা দেখাবে
     if not skills:
         skills = [
             {"name": "IP Addressing & Subnetting", "category": "Networking", "level": "Intermediate"},
@@ -308,32 +328,6 @@ elif menu == "Contact":
     st.markdown(f"**Location:** {profile_data.get('location')}")
 
 # ==========================================
-# HELPER FUNCTIONS FOR ADMIN (ADD & DELETE)
-# ==========================================
-def insert_data(table_name, data):
-    if not supabase:
-        return False
-    try:
-        supabase.table(table_name).insert(data).execute()
-        st.cache_data.clear()
-        return True
-    except Exception as e:
-        st.error(f"Error inserting into {table_name}: {e}")
-        return False
-
-def delete_data(table_name, item_id):
-    if not supabase:
-        return False
-    try:
-        supabase.table(table_name).delete().eq("id", item_id).execute()
-        st.cache_data.clear()
-        return True
-    except Exception as e:
-        st.error(f"Error deleting from {table_name}: {e}")
-        return False
-
-
-# ==========================================
 # ADMIN PANEL
 # ==========================================
 elif menu == "Admin Panel":
@@ -358,12 +352,9 @@ elif menu == "Admin Panel":
                 st.session_state["admin_authenticated"] = False
                 st.rerun()
                 
-        # ট্যাব ব্যবহারের মাধ্যমে ফিচারগুলো গুছিয়ে দেওয়া হয়েছে
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["Profile", "Skills", "Projects", "Experience", "Learning Journey"])
 
-        # ----------------------------------
         # TAB 1: PROFILE EDIT
-        # ----------------------------------
         with tab1:
             st.subheader("Edit Profile Data")
             prof = get_profile()
@@ -388,9 +379,7 @@ elif menu == "Admin Panel":
                         st.success("Profile updated successfully!")
                         st.rerun()
 
-        # ----------------------------------
         # TAB 2: MANAGE SKILLS
-        # ----------------------------------
         with tab2:
             st.subheader("Add New Skill")
             with st.form("add_skill_form"):
@@ -424,9 +413,7 @@ elif menu == "Admin Panel":
             else:
                 st.info("No skills found in database.")
 
-        # ----------------------------------
         # TAB 3: MANAGE PROJECTS
-        # ----------------------------------
         with tab3:
             st.subheader("Add New Project")
             with st.form("add_project_form"):
@@ -460,9 +447,7 @@ elif menu == "Admin Panel":
             else:
                 st.info("No projects found in database.")
 
-        # ----------------------------------
         # TAB 4: MANAGE EXPERIENCE
-        # ----------------------------------
         with tab4:
             st.subheader("Add New Experience")
             with st.form("add_exp_form"):
@@ -495,9 +480,7 @@ elif menu == "Admin Panel":
             else:
                 st.info("No experience entries found in database.")
 
-        # ----------------------------------
         # TAB 5: MANAGE LEARNING JOURNEY
-        # ----------------------------------
         with tab5:
             st.subheader("Add Learning Journey Milestone")
             with st.form("add_lj_form"):
