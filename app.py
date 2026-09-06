@@ -179,7 +179,7 @@ if menu == "Home":
     col1, col2 = st.columns([1, 2], gap="large")
     
     with col1:
-        img_url = profile_data.get("profile_image")
+        img_url = "https://raw.githubusercontent.com/remoonIqri/My-portfolio/main/1000243092.jpg"
         if img_url:
             try:
                 st.image(img_url, use_container_width=True)
