@@ -232,26 +232,6 @@ if menu == "Home":
         st.markdown(infra_card, unsafe_allow_html=True)
 
 # ==========================================
-# ABOUT PAGE
-# ==========================================
-elif menu == "About":
-    st.title("About Me")
-    
-    col1, col2 = st.columns([1, 2], gap="medium")
-    
-    with col1:
-        img_url = profile_data.get("profile_image")
-        if img_url:
-            st.image(img_url, use_container_width=True)
-        st.markdown(f"**Location:** {profile_data.get('location')}")
-        st.markdown(f"**Status:** {profile_data.get('experience_years')}")
-        
-    with col2:
-        st.subheader(profile_data.get("name"))
-        st.write(f"**{profile_data.get('title')}**")
-        st.write(profile_data.get("bio"))
-
-# ==========================================
 # SKILLS PAGE
 # ==========================================
 elif menu == "Skills":
