@@ -37,7 +37,6 @@ DEFAULT_PROFILE = {
     "bio": "I am Iqratun Nesa Remoon from Chattogram, Bangladesh. I am currently learning Cybersecurity and building my knowledge in IT networking and infrastructure. I have been working with networking concepts such as IP addressing and subnetting, routing, VLANs, router configuration, SSH, port security and access control. I use Cisco Packet Tracer to practice network configuration and topology design, and I am continuously exploring IT infrastructure and cybersecurity concepts.",
     "location": "Chattogram, Bangladesh",
     "email": "remooniqra@gmail.com",
-    # GitHub Raw Image Direct Link:
     "profile_image": "https://raw.githubusercontent.com/oksajid1411-coder/Iqra-portfolio/300d7d25ad394851b2fa33f8459b65ea997c82d5/1000243092.jpg",
     "experience_years": "Beginner Level",
     "current_focus": "Cybersecurity, IT Networking & Infrastructure"
@@ -52,8 +51,7 @@ def fetch_data(table_name, order_col="display_order"):
     try:
         res = supabase.table(table_name).select("*").order(order_col, desc=False).execute()
         return res.data
-    except Exception as e:
-        st.error(f"Error fetching from {table_name}: {e}")
+    except Exception:
         return []
 
 def get_profile():
@@ -147,14 +145,14 @@ profile_data = get_profile()
 st.sidebar.title(profile_data.get("name", "Portfolio"))
 st.sidebar.caption(profile_data.get("title", ""))
 
-# Navigation Option (About পেজ বাদ দেওয়া হয়েছে)
+# Navigation Option (Areas of Interest অপশন বাদ দেওয়া হয়েছে)
 menu = st.sidebar.radio(
     "Navigation",
-    ["Home", "Skills", "Projects", "Areas of Interest", "Experience", "Learning Journey", "Contact", "Admin Panel"]
+    ["Home", "Skills", "Projects", "Experience", "Learning Journey", "Contact", "Admin Panel"]
 )
 
 # ==========================================
-# HOME PAGE (With About Section Integrated)
+# HOME PAGE
 # ==========================================
 if menu == "Home":
     col1, col2 = st.columns([1, 2], gap="large")
@@ -163,7 +161,6 @@ if menu == "Home":
         img_url = profile_data.get("profile_image")
         if img_url:
             try:
-                # Streamlit Native Image Renderer (Error Free & Dynamic Container Width)
                 st.image(img_url, use_container_width=True)
             except Exception:
                 st.warning("Profile image could not be loaded.")
@@ -178,9 +175,6 @@ if menu == "Home":
 
     st.markdown("---")
     
-    # --------------------------------------
-    # ABOUT ME SECTION (Home পেজে যুক্ত করা হলো)
-    # --------------------------------------
     st.header("About Me")
     bio_text = profile_data.get("bio", "")
     st.markdown(f"""
@@ -236,20 +230,29 @@ if menu == "Home":
 # ==========================================
 # SKILLS PAGE
 # ==========================================
-elif menu == "skills":
+elif menu == "Skills":
     st.title("Skills & Competencies")
     skills = fetch_data("skills")
+    
+    # Supabase-এ টেবিলে ডেটা না থাকলে লোকাল ডেটা দেখাবে
     if not skills:
-        st.info("No skills listed.")
-    else:
-        cols = st.columns(3)
-        for idx, skill in enumerate(skills):
-            with cols[idx % 3]:
-                sk_name = skill.get("name", "")
-                sk_cat = skill.get("category", "")
-                sk_lvl = skill.get("level", "")
-                skill_card = f'<div class="card"><h4>{sk_name}</h4><p><span class="badge-secondary">{sk_cat}</span></p><p><strong>Level:</strong> <span class="accent-text">{sk_lvl}</span></p></div>'
-                st.markdown(skill_card, unsafe_allow_html=True)
+        skills = [
+            {"name": "IP Addressing & Subnetting", "category": "Networking", "level": "Intermediate"},
+            {"name": "VLANs & Routing", "category": "Networking", "level": "Intermediate"},
+            {"name": "Cisco Packet Tracer", "category": "Tools", "level": "Practical"},
+            {"name": "Port Security & SSH", "category": "Security", "level": "Beginner"},
+            {"name": "Router & Switch Config", "category": "Networking", "level": "Intermediate"},
+            {"name": "Network Topology Design", "category": "Infrastructure", "level": "Beginner"}
+        ]
+        
+    cols = st.columns(3)
+    for idx, skill in enumerate(skills):
+        with cols[idx % 3]:
+            sk_name = skill.get("name", "")
+            sk_cat = skill.get("category", "")
+            sk_lvl = skill.get("level", "")
+            skill_card = f'<div class="card"><h4>{sk_name}</h4><p><span class="badge-secondary">{sk_cat}</span></p><p><strong>Level:</strong> <span class="accent-text">{sk_lvl}</span></p></div>'
+            st.markdown(skill_card, unsafe_allow_html=True)
 
 # ==========================================
 # PROJECTS PAGE
@@ -265,21 +268,6 @@ elif menu == "Projects":
             p_cat = proj.get("category", "General")
             with st.expander(f"📌 {p_title} ({p_cat})"):
                 st.write(proj.get("description", ""))
-
-# ==========================================
-# AREAS OF INTEREST PAGE
-# ==========================================
-elif menu == "Areas of Interest":
-    st.title("Areas of Interest & Focus")
-    services = fetch_data("services")
-    if not services:
-        st.info("No interest areas listed.")
-    else:
-        for srv in services:
-            s_title = srv.get("title", "")
-            s_desc = srv.get("description", "")
-            srv_card = f'<div class="card"><h3>{s_title}</h3><p>{s_desc}</p></div>'
-            st.markdown(srv_card, unsafe_allow_html=True)
 
 # ==========================================
 # EXPERIENCE PAGE
