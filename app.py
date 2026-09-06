@@ -2,7 +2,6 @@
 # IMPORTS
 # ==========================================
 import streamlit as st
-import re
 from supabase import create_client, Client
 
 # ==========================================
@@ -24,7 +23,7 @@ def init_supabase() -> Client:
         url = st.secrets["SUPABASE_URL"]
         key = st.secrets["SUPABASE_KEY"]
         return create_client(url, key)
-    except Exception as e:
+    except Exception:
         return None
 
 supabase = init_supabase()
@@ -38,6 +37,7 @@ DEFAULT_PROFILE = {
     "bio": "I am Iqratun Nesa Remoon from Chattogram, Bangladesh. I am currently learning Cybersecurity and building my knowledge in IT networking and infrastructure. I have been working with networking concepts such as IP addressing and subnetting, routing, VLANs, router configuration, SSH, port security and access control. I use Cisco Packet Tracer to practice network configuration and topology design, and I am continuously exploring IT infrastructure and cybersecurity concepts.",
     "location": "Chattogram, Bangladesh",
     "email": "remooniqra@gmail.com",
+    # GitHub Raw Image Direct Link:
     "profile_image": "https://raw.githubusercontent.com/oksajid1411-coder/Iqra-portfolio/300d7d25ad394851b2fa33f8459b65ea997c82d5/1000243092.jpg",
     "experience_years": "Beginner Level",
     "current_focus": "Cybersecurity, IT Networking & Infrastructure"
@@ -61,7 +61,7 @@ def get_profile():
         return DEFAULT_PROFILE
     try:
         res = supabase.table("profiles").select("*").limit(1).execute()
-        if res.data:
+        if res.data and len(res.data) > 0:
             return res.data[0]
         return DEFAULT_PROFILE
     except Exception:
@@ -72,7 +72,7 @@ def update_profile(data):
         return False
     try:
         prof = get_profile()
-        if "id" in prof:
+        if isinstance(prof, dict) and "id" in prof:
             supabase.table("profiles").update(data).eq("id", prof["id"]).execute()
         else:
             supabase.table("profiles").insert(data).execute()
@@ -125,21 +125,6 @@ css_style = """
         background-color: #334155;
         color: #cbd5e1;
     }
-    .profile-img-container {
-        border-radius: 50%;
-        border: 3px solid #38bdf8;
-        padding: 5px;
-        width: 200px;
-        height: 200px;
-        overflow: hidden;
-        margin: 0 auto;
-    }
-    .profile-img-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-    }
     .timeline-item {
         border-left: 2px solid #38bdf8;
         padding-left: 20px;
@@ -162,13 +147,14 @@ profile_data = get_profile()
 st.sidebar.title(profile_data.get("name", "Portfolio"))
 st.sidebar.caption(profile_data.get("title", ""))
 
+# Navigation Option (About পেজ বাদ দেওয়া হয়েছে)
 menu = st.sidebar.radio(
     "Navigation",
-    ["Home", "About", "Skills", "Projects", "Areas of Interest", "Experience", "Learning Journey", "Contact", "Admin Panel"]
+    ["Home", "Skills", "Projects", "Areas of Interest", "Experience", "Learning Journey", "Contact", "Admin Panel"]
 )
 
 # ==========================================
-# HOME PAGE
+# HOME PAGE (With About Section Integrated)
 # ==========================================
 if menu == "Home":
     col1, col2 = st.columns([1, 2], gap="large")
@@ -176,16 +162,32 @@ if menu == "Home":
     with col1:
         img_url = profile_data.get("profile_image")
         if img_url:
-            name_val = profile_data.get("name")
-            html_img = f'<div class="profile-img-container"><img src="{img_url}" alt="{name_val}"></div>'
-            st.markdown(html_img, unsafe_allow_html=True)
+            try:
+                # Streamlit Native Image Renderer (Error Free & Dynamic Container Width)
+                st.image(img_url, use_container_width=True)
+            except Exception:
+                st.warning("Profile image could not be loaded.")
             
     with col2:
         st.title(profile_data.get("name"))
         st.subheader(f":blue[{profile_data.get('title')}]")
-        st.markdown(f"**Focus:** {profile_data.get('current_focus')}")
+        st.markdown(f"**Current Focus:** {profile_data.get('current_focus')}")
+        st.markdown(f"**Experience Status:** {profile_data.get('experience_years')}")
         st.markdown(f"📍 {profile_data.get('location')}")
         st.markdown("> *\"Learning, building, and exploring the world of networking, IT infrastructure, and cybersecurity.\"*")
+
+    st.markdown("---")
+    
+    # --------------------------------------
+    # ABOUT ME SECTION (Home পেজে যুক্ত করা হলো)
+    # --------------------------------------
+    st.header("About Me")
+    bio_text = profile_data.get("bio", "")
+    st.markdown(f"""
+    <div class="card">
+        <p style="font-size: 1.05rem; line-height: 1.6;">{bio_text}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.header("Core Learning Areas")
@@ -194,41 +196,41 @@ if menu == "Home":
     
     with c1:
         net_card = """<div class="card">
-    <h3>🌐 Networking</h3>
-    <ul>
-        <li>IP Addressing & Subnetting</li>
-        <li>Routing & VLANs</li>
-        <li>Router Configuration</li>
-        <li>Cisco Packet Tracer</li>
-    </ul>
-    <span class="badge">Practical Practice</span>
-</div>"""
+        <h3>🌐 Networking</h3>
+        <ul>
+            <li>IP Addressing & Subnetting</li>
+            <li>Routing & VLANs</li>
+            <li>Router Configuration</li>
+            <li>Cisco Packet Tracer</li>
+        </ul>
+        <span class="badge">Practical Practice</span>
+    </div>"""
         st.markdown(net_card, unsafe_allow_html=True)
         
     with c2:
         sec_card = """<div class="card">
-    <h3>🔒 Network Security</h3>
-    <ul>
-        <li>Port Security</li>
-        <li>SSH Configuration</li>
-        <li>ACLs (Beginner)</li>
-        <li>Access Control Concepts</li>
-    </ul>
-    <span class="badge">Currently Learning</span>
-</div>"""
+        <h3>🔒 Network Security</h3>
+        <ul>
+            <li>Port Security</li>
+            <li>SSH Configuration</li>
+            <li>ACLs (Beginner)</li>
+            <li>Access Control Concepts</li>
+        </ul>
+        <span class="badge">Currently Learning</span>
+    </div>"""
         st.markdown(sec_card, unsafe_allow_html=True)
         
     with c3:
         infra_card = """<div class="card">
-    <h3>⚙️ IT Infrastructure</h3>
-    <ul>
-        <li>MikroTik Basics</li>
-        <li>EtherChannel (Beginner)</li>
-        <li>Network Topology Design</li>
-        <li>Infrastructure Fundamentals</li>
-    </ul>
-    <span class="badge">Exploring</span>
-</div>"""
+        <h3>⚙️ IT Infrastructure</h3>
+        <ul>
+            <li>MikroTik Basics</li>
+            <li>EtherChannel (Beginner)</li>
+            <li>Network Topology Design</li>
+            <li>Infrastructure Fundamentals</li>
+        </ul>
+        <span class="badge">Exploring</span>
+    </div>"""
         st.markdown(infra_card, unsafe_allow_html=True)
 
 # ==========================================
@@ -243,9 +245,9 @@ elif menu == "Skills":
         cols = st.columns(3)
         for idx, skill in enumerate(skills):
             with cols[idx % 3]:
-                sk_name = skill.get("name")
-                sk_cat = skill.get("category")
-                sk_lvl = skill.get("level")
+                sk_name = skill.get("name", "")
+                sk_cat = skill.get("category", "")
+                sk_lvl = skill.get("level", "")
                 skill_card = f'<div class="card"><h4>{sk_name}</h4><p><span class="badge-secondary">{sk_cat}</span></p><p><strong>Level:</strong> <span class="accent-text">{sk_lvl}</span></p></div>'
                 st.markdown(skill_card, unsafe_allow_html=True)
 
@@ -259,10 +261,10 @@ elif menu == "Projects":
         st.info("No projects added yet.")
     else:
         for proj in projects:
-            p_title = proj.get("title")
-            p_cat = proj.get("category")
+            p_title = proj.get("title", "Project")
+            p_cat = proj.get("category", "General")
             with st.expander(f"📌 {p_title} ({p_cat})"):
-                st.write(proj.get("description"))
+                st.write(proj.get("description", ""))
 
 # ==========================================
 # AREAS OF INTEREST PAGE
@@ -274,8 +276,8 @@ elif menu == "Areas of Interest":
         st.info("No interest areas listed.")
     else:
         for srv in services:
-            s_title = srv.get("title")
-            s_desc = srv.get("description")
+            s_title = srv.get("title", "")
+            s_desc = srv.get("description", "")
             srv_card = f'<div class="card"><h3>{s_title}</h3><p>{s_desc}</p></div>'
             st.markdown(srv_card, unsafe_allow_html=True)
 
@@ -289,8 +291,8 @@ elif menu == "Experience":
         st.info("No experience entries listed.")
     else:
         for exp in exps:
-            e_pos = exp.get("position")
-            e_org = exp.get("organization")
+            e_pos = exp.get("position", "")
+            e_org = exp.get("organization", "")
             exp_card = f'<div class="timeline-item"><h4>{e_pos}</h4><p><strong>{e_org}</strong></p></div>'
             st.markdown(exp_card, unsafe_allow_html=True)
 
@@ -304,8 +306,8 @@ elif menu == "Learning Journey":
         st.info("No milestones listed.")
     else:
         for item in journey:
-            j_title = item.get("title")
-            j_desc = item.get("description")
+            j_title = item.get("title", "")
+            j_desc = item.get("description", "")
             j_card = f'<div class="timeline-item"><h4>{j_title}</h4><p>{j_desc}</p></div>'
             st.markdown(j_card, unsafe_allow_html=True)
 
