@@ -308,6 +308,32 @@ elif menu == "Contact":
     st.markdown(f"**Location:** {profile_data.get('location')}")
 
 # ==========================================
+# HELPER FUNCTIONS FOR ADMIN (ADD & DELETE)
+# ==========================================
+def insert_data(table_name, data):
+    if not supabase:
+        return False
+    try:
+        supabase.table(table_name).insert(data).execute()
+        st.cache_data.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error inserting into {table_name}: {e}")
+        return False
+
+def delete_data(table_name, item_id):
+    if not supabase:
+        return False
+    try:
+        supabase.table(table_name).delete().eq("id", item_id).execute()
+        st.cache_data.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error deleting from {table_name}: {e}")
+        return False
+
+
+# ==========================================
 # ADMIN PANEL
 # ==========================================
 elif menu == "Admin Panel":
@@ -326,28 +352,180 @@ elif menu == "Admin Panel":
             else:
                 st.error("Invalid Admin Code.")
     else:
-        if st.button("Logout"):
-            st.session_state["admin_authenticated"] = False
-            st.rerun()
+        col_logout, col_empty = st.columns([1, 5])
+        with col_logout:
+            if st.button("Logout"):
+                st.session_state["admin_authenticated"] = False
+                st.rerun()
+                
+        # ট্যাব ব্যবহারের মাধ্যমে ফিচারগুলো গুছিয়ে দেওয়া হয়েছে
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Profile", "Skills", "Projects", "Experience", "Learning Journey"])
+
+        # ----------------------------------
+        # TAB 1: PROFILE EDIT
+        # ----------------------------------
+        with tab1:
+            st.subheader("Edit Profile Data")
+            prof = get_profile()
             
-        st.subheader("Edit Profile Data")
-        prof = get_profile()
-        
-        with st.form("profile_form"):
-            name = st.text_input("Name", value=prof.get("name", ""))
-            title = st.text_input("Title", value=prof.get("title", ""))
-            current_focus = st.text_input("Current Focus", value=prof.get("current_focus", ""))
-            location = st.text_input("Location", value=prof.get("location", ""))
-            email = st.text_input("Email", value=prof.get("email", ""))
-            profile_image = st.text_input("Profile Image URL", value=prof.get("profile_image", ""))
-            experience_years = st.text_input("Experience Status", value=prof.get("experience_years", ""))
-            bio = st.text_area("Bio", value=prof.get("bio", ""))
-            
-            if st.form_submit_button("Save Profile"):
-                data = {
-                    "name": name, "title": title, "current_focus": current_focus,
-                    "location": location, "email": email, "profile_image": profile_image,
-                    "experience_years": experience_years, "bio": bio
-                }
-                if update_profile(data):
-                    st.success("Profile updated successfully!")
+            with st.form("profile_form"):
+                name = st.text_input("Name", value=prof.get("name", ""))
+                title = st.text_input("Title", value=prof.get("title", ""))
+                current_focus = st.text_input("Current Focus", value=prof.get("current_focus", ""))
+                location = st.text_input("Location", value=prof.get("location", ""))
+                email = st.text_input("Email", value=prof.get("email", ""))
+                profile_image = st.text_input("Profile Image URL", value=prof.get("profile_image", ""))
+                experience_years = st.text_input("Experience Status", value=prof.get("experience_years", ""))
+                bio = st.text_area("Bio", value=prof.get("bio", ""))
+                
+                if st.form_submit_button("Save Profile"):
+                    data = {
+                        "name": name, "title": title, "current_focus": current_focus,
+                        "location": location, "email": email, "profile_image": profile_image,
+                        "experience_years": experience_years, "bio": bio
+                    }
+                    if update_profile(data):
+                        st.success("Profile updated successfully!")
+                        st.rerun()
+
+        # ----------------------------------
+        # TAB 2: MANAGE SKILLS
+        # ----------------------------------
+        with tab2:
+            st.subheader("Add New Skill")
+            with st.form("add_skill_form"):
+                sk_name = st.text_input("Skill Name")
+                sk_cat = st.text_input("Category (e.g. Networking, Security, Tools)")
+                sk_lvl = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced", "Practical"])
+                sk_order = st.number_input("Display Order", value=1, step=1)
+                
+                if st.form_submit_button("Add Skill"):
+                    if sk_name:
+                        new_skill = {"name": sk_name, "category": sk_cat, "level": sk_lvl, "display_order": sk_order}
+                        if insert_data("skills", new_skill):
+                            st.success(f"Added skill: {sk_name}")
+                            st.rerun()
+                    else:
+                        st.warning("Skill name is required.")
+
+            st.markdown("---")
+            st.subheader("Existing Skills")
+            skills_list = fetch_data("skills")
+            if skills_list:
+                for item in skills_list:
+                    c1, c2 = st.columns([4, 1])
+                    with c1:
+                        st.write(f"**{item.get('name')}** ({item.get('category')}) - *{item.get('level')}*")
+                    with c2:
+                        if st.button("Delete", key=f"del_sk_{item.get('id')}"):
+                            if delete_data("skills", item.get('id')):
+                                st.success("Deleted!")
+                                st.rerun()
+            else:
+                st.info("No skills found in database.")
+
+        # ----------------------------------
+        # TAB 3: MANAGE PROJECTS
+        # ----------------------------------
+        with tab3:
+            st.subheader("Add New Project")
+            with st.form("add_project_form"):
+                p_title = st.text_input("Project Title")
+                p_cat = st.text_input("Category (e.g. Packet Tracer, Security Lab)")
+                p_desc = st.text_area("Description")
+                p_order = st.number_input("Display Order", value=1, step=1)
+                
+                if st.form_submit_button("Add Project"):
+                    if p_title:
+                        new_proj = {"title": p_title, "category": p_cat, "description": p_desc, "display_order": p_order}
+                        if insert_data("projects", new_proj):
+                            st.success(f"Added project: {p_title}")
+                            st.rerun()
+                    else:
+                        st.warning("Project title is required.")
+
+            st.markdown("---")
+            st.subheader("Existing Projects")
+            projects_list = fetch_data("projects")
+            if projects_list:
+                for item in projects_list:
+                    c1, c2 = st.columns([4, 1])
+                    with c1:
+                        st.write(f"**{item.get('title')}** ({item.get('category')})")
+                    with c2:
+                        if st.button("Delete", key=f"del_proj_{item.get('id')}"):
+                            if delete_data("projects", item.get('id')):
+                                st.success("Deleted!")
+                                st.rerun()
+            else:
+                st.info("No projects found in database.")
+
+        # ----------------------------------
+        # TAB 4: MANAGE EXPERIENCE
+        # ----------------------------------
+        with tab4:
+            st.subheader("Add New Experience")
+            with st.form("add_exp_form"):
+                e_pos = st.text_input("Position / Role")
+                e_org = st.text_input("Organization / Details")
+                e_order = st.number_input("Display Order", value=1, step=1)
+                
+                if st.form_submit_button("Add Experience"):
+                    if e_pos:
+                        new_exp = {"position": e_pos, "organization": e_org, "display_order": e_order}
+                        if insert_data("experience", new_exp):
+                            st.success("Added experience!")
+                            st.rerun()
+                    else:
+                        st.warning("Position is required.")
+
+            st.markdown("---")
+            st.subheader("Existing Experience")
+            exp_list = fetch_data("experience")
+            if exp_list:
+                for item in exp_list:
+                    c1, c2 = st.columns([4, 1])
+                    with c1:
+                        st.write(f"**{item.get('position')}** - {item.get('organization')}")
+                    with c2:
+                        if st.button("Delete", key=f"del_exp_{item.get('id')}"):
+                            if delete_data("experience", item.get('id')):
+                                st.success("Deleted!")
+                                st.rerun()
+            else:
+                st.info("No experience entries found in database.")
+
+        # ----------------------------------
+        # TAB 5: MANAGE LEARNING JOURNEY
+        # ----------------------------------
+        with tab5:
+            st.subheader("Add Learning Journey Milestone")
+            with st.form("add_lj_form"):
+                j_title = st.text_input("Milestone Title")
+                j_desc = st.text_area("Description")
+                j_order = st.number_input("Display Order", value=1, step=1)
+                
+                if st.form_submit_button("Add Milestone"):
+                    if j_title:
+                        new_item = {"title": j_title, "description": j_desc, "display_order": j_order}
+                        if insert_data("learning_journey", new_item):
+                            st.success("Added milestone!")
+                            st.rerun()
+                    else:
+                        st.warning("Title is required.")
+
+            st.markdown("---")
+            st.subheader("Existing Milestones")
+            journey_list = fetch_data("learning_journey")
+            if journey_list:
+                for item in journey_list:
+                    c1, c2 = st.columns([4, 1])
+                    with c1:
+                        st.write(f"**{item.get('title')}**")
+                    with c2:
+                        if st.button("Delete", key=f"del_lj_{item.get('id')}"):
+                            if delete_data("learning_journey", item.get('id')):
+                                st.success("Deleted!")
+                                st.rerun()
+            else:
+                st.info("No learning journey items found in database.")
