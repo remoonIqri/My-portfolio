@@ -735,8 +735,7 @@ def render_home():
     location = profile.get("location", "Chattogram, Bangladesh")
     email = profile.get("email", "")
     bio = profile.get("bio", "")
-    image_url = "https://raw.githubusercontent.com/remoonIqri/My-portfolio/blob/main/1000243092.jpg"
-
+    image_url = "https://raw.githubusercontent.com/remoonIqri/My-portfolio/main/1000243092.jpg"
     github_url = ""
     linkedin_url = ""
 
