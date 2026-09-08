@@ -911,12 +911,13 @@ def render_skills():
 
     st.title("⚡ Technical Skills")
 
-    skills = get_skills()
+    skills = get_skills() or []  # None আসলে খালি লিস্ট ধরে নেবে
 
     if not skills:
         st.info("No skills currently listed.")
         return
 
+    # ক্যাটাগরি ফিল্টারিং
     categories = sorted(
         list(
             set(
@@ -945,20 +946,15 @@ def render_skills():
             set(
                 s.get("category", "")
                 for s in filtered_skills
+                if s.get("category")
             )
         )
     )
 
     for category in display_categories:
 
-        st.markdown(
-            f"""
-            <div class="category-header">
-                {safe_text(category)}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        cat_html = f"<div class='category-header'>{safe_text(category)}</div>"
+        st.markdown(cat_html, unsafe_allow_html=True)
 
         category_skills = [
             s for s in filtered_skills
@@ -969,11 +965,7 @@ def render_skills():
 
         for index, skill in enumerate(category_skills):
 
-            level = skill.get(
-                "level",
-                "Intermediate"
-            )
-
+            level = skill.get("level", "Intermediate")
             level_lower = level.lower()
 
             if "advanced" in level_lower:
@@ -984,23 +976,17 @@ def render_skills():
                 badge = "level-intermediate"
 
             with cols[index % 4]:
+                skill_name = safe_text(skill.get("name", ""))
+                level_text = safe_text(level)
 
-                st.markdown(
-                    f"""
-                    <div class="skill-card">
-                        <div class="skill-title">
-                            {safe_text(skill.get("name", ""))}
-                        </div>
-
-                        <span class="level-badge {badge}">
-                            {safe_text(level)}
-                        </span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                card_html = (
+                    f"<div class='skill-card'>"
+                    f"<div class='skill-title'>{skill_name}</div>"
+                    f"<span class='level-badge {badge}'>{level_text}</span>"
+                    f"</div>"
                 )
 
-
+                st.markdown(card_html, unsafe_allow_html=True)
 # ==========================================
 # PROJECTS PAGE
 # ==========================================
