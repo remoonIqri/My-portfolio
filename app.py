@@ -723,8 +723,8 @@ h1, h2, h3 {
 def render_home():
 
     profile = get_profile()
-    skills = get_skills()
-    projects = get_projects()
+    skills = get_skills() or []      # None আসলে খালি লিস্ট ধরে নেবে (Bug Fix)
+    projects = get_projects() or []  # None আসলে খালি লিস্ট ধরে নেবে (Bug Fix)
 
     if not profile:
         st.warning("Profile information is not available.")
@@ -739,19 +739,17 @@ def render_home():
     github_url = ""
     linkedin_url = ""
 
-    socials = get_social_links()
+    socials = get_social_links() or []
 
     for social in socials:
         platform = social.get("platform", "").lower()
-
         if platform == "github":
             github_url = social.get("url", "")
-
         elif platform == "linkedin":
             linkedin_url = social.get("url", "")
 
     # --------------------------------------
-    # HERO
+    # HERO SECTION
     # --------------------------------------
     col1, col2 = st.columns([1, 2], gap="large")
 
@@ -763,7 +761,6 @@ def render_home():
             )
 
     with col2:
-
         st.markdown(
             f"""
             <h1>
@@ -849,7 +846,7 @@ def render_home():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # --------------------------------------
-    # STATS
+    # STATS SECTION
     # --------------------------------------
     s1, s2, s3, s4 = st.columns(4)
 
@@ -908,7 +905,7 @@ def render_home():
     st.markdown("<br><hr>", unsafe_allow_html=True)
 
     # --------------------------------------
-    # CORE EXPERTISE
+    # CORE EXPERTISE SECTION
     # --------------------------------------
     st.markdown("## ⚡ Core Expertise")
 
@@ -930,21 +927,21 @@ def render_home():
         )
     ]
 
-    cols = st.columns(3)
+    # কলাম সংখ্যা অনুযায়ী ডাইনামিকভাবে হ্যান্ডেল করা হয়েছে (Bug Fix)
+    cols = st.columns(len(expertise))
 
     for i, item in enumerate(expertise):
-
         title_text, description, badges = item
 
         with cols[i]:
             badge_html = "".join(
-                f'<span class="glow-badge">{safe_text(b)}</span>'
+                f'<span class="glow-badge" style="margin-right: 5px; margin-bottom: 5px; display: inline-block;">{safe_text(b)}</span>'
                 for b in badges
             )
 
             st.markdown(
                 f"""
-                <div class="glass-card">
+                <div class="glass-card" style="height: 100%;">
                     <h3>{title_text}</h3>
                     <p style="
                         color:#94a3b8;
@@ -959,7 +956,7 @@ def render_home():
             )
 
     # --------------------------------------
-    # LEARNING WORKFLOW
+    # LEARNING WORKFLOW SECTION
     # --------------------------------------
     st.markdown("## 🔄 Learning & Security Workflow")
 
@@ -974,41 +971,21 @@ def render_home():
                 justify-content:center;
             ">
 
-                <div class="glow-badge">
-                    📚 Learn
-                </div>
-
+                <div class="glow-badge">📚 Learn</div>
                 <strong>→</strong>
-
-                <div class="glow-badge">
-                    🧪 Practice
-                </div>
-
+                <div class="glow-badge">🧪 Practice</div>
                 <strong>→</strong>
-
-                <div class="glow-badge">
-                    🌐 Configure
-                </div>
-
+                <div class="glow-badge">🌐 Configure</div>
                 <strong>→</strong>
-
-                <div class="glow-badge">
-                    🛡️ Secure
-                </div>
-
+                <div class="glow-badge">🛡️ Secure</div>
                 <strong>→</strong>
-
-                <div class="glow-badge">
-                    🎯 Improve
-                </div>
+                <div class="glow-badge">🎯 Improve</div>
 
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
-
 # ==========================================
 # SKILLS PAGE
 # ==========================================
