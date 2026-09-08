@@ -723,8 +723,8 @@ h1, h2, h3 {
 def render_home():
 
     profile = get_profile()
-    skills = get_skills() or []      # None আসলে খালি লিস্ট ধরে নেবে (Bug Fix)
-    projects = get_projects() or []  # None আসলে খালি লিস্ট ধরে নেবে (Bug Fix)
+    skills = get_skills() or []      # None আসলে খালি লিস্ট ধরে নেবে
+    projects = get_projects() or []  # None আসলে খালি লিস্ট ধরে নেবে
 
     if not profile:
         st.warning("Profile information is not available.")
@@ -762,86 +762,47 @@ def render_home():
 
     with col2:
         st.markdown(
-            f"""
-            <h1>
-                <span class="gradient-text">
-                    {safe_text(name)}
-                </span>
-            </h1>
-            """,
+            f"<h1><span class='gradient-text'>{safe_text(name)}</span></h1>",
             unsafe_allow_html=True
         )
 
         st.markdown(
-            f"""
-            <h3 style="color:#94a3b8 !important;">
-                {safe_text(title)}
-            </h3>
-            """,
+            f"<h3 style='color:#94a3b8 !important;'>{safe_text(title)}</h3>",
             unsafe_allow_html=True
         )
 
         st.markdown(
-            f"""
-            📍 **Location:** {safe_text(location)}
-            &nbsp; | &nbsp;
-            ✉️ **Email:** [{safe_text(email)}](mailto:{email})
-            """
+            f"📍 **Location:** {safe_text(location)} &nbsp; | &nbsp; ✉️ **Email:** [{safe_text(email)}](mailto:{email})"
         )
 
         st.markdown("---")
 
         st.markdown(
-            f"""
-            <p style="
-                font-size:1.05em;
-                line-height:1.7;
-                color:#cbd5e1;
-            ">
-                {safe_text(bio)}
-            </p>
-            """,
+            f"<p style='font-size:1.05em; line-height:1.7; color:#cbd5e1;'>{safe_text(bio)}</p>",
             unsafe_allow_html=True
         )
 
         b1, b2, b3 = st.columns(3)
 
         with b1:
-            if st.button(
-                "📁 Explore Projects",
-                use_container_width=True
-            ):
+            if st.button("📁 Explore Projects", use_container_width=True):
                 st.session_state["nav"] = "Projects"
                 st.rerun()
 
         with b2:
-            if st.button(
-                "✉️ Get In Touch",
-                use_container_width=True
-            ):
+            if st.button("✉️ Get In Touch", use_container_width=True):
                 st.session_state["nav"] = "Contact"
                 st.rerun()
 
         with b3:
             if github_url:
-                st.markdown(
-                    f"""
-                    <a href='{github_url}'
-                       target='_blank'
-                       style='
-                       display:block;
-                       text-align:center;
-                       background:#334155;
-                       color:white;
-                       padding:10px;
-                       border-radius:8px;
-                       text-decoration:none;
-                       font-weight:600;'>
-                       🔗 GitHub
-                    </a>
-                    """,
-                    unsafe_allow_html=True
+                github_btn_html = (
+                    f"<a href='{github_url}' target='_blank' "
+                    "style='display:block; text-align:center; background:#334155; color:white; "
+                    "padding:10px; border-radius:8px; text-decoration:none; font-weight:600;'>"
+                    "🔗 GitHub</a>"
                 )
+                st.markdown(github_btn_html, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -852,53 +813,25 @@ def render_home():
 
     with s1:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">Skills</div>
-                <div class="metric-value">
-                    {len(skills)}
-                </div>
-            </div>
-            """,
+            f"<div class='metric-card'><div class='metric-label'>Skills</div><div class='metric-value'>{len(skills)}</div></div>",
             unsafe_allow_html=True
         )
 
     with s2:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">Projects</div>
-                <div class="metric-value">
-                    {len(projects)}
-                </div>
-            </div>
-            """,
+            f"<div class='metric-card'><div class='metric-label'>Projects</div><div class='metric-value'>{len(projects)}</div></div>",
             unsafe_allow_html=True
         )
 
     with s3:
         st.markdown(
-            """
-            <div class="metric-card">
-                <div class="metric-label">Core Focus</div>
-                <div class="metric-value">
-                    Cyber Security
-                </div>
-            </div>
-            """,
+            "<div class='metric-card'><div class='metric-label'>Core Focus</div><div class='metric-value'>Cyber Security</div></div>",
             unsafe_allow_html=True
         )
 
     with s4:
         st.markdown(
-            """
-            <div class="metric-card">
-                <div class="metric-label">Focus Area</div>
-                <div class="metric-value">
-                    Networking
-                </div>
-            </div>
-            """,
+            "<div class='metric-card'><div class='metric-label'>Focus Area</div><div class='metric-value'>Networking</div></div>",
             unsafe_allow_html=True
         )
 
@@ -927,7 +860,6 @@ def render_home():
         )
     ]
 
-    # কলাম সংখ্যা অনুযায়ী ডাইনামিকভাবে হ্যান্ডেল করা হয়েছে (Bug Fix)
     cols = st.columns(len(expertise))
 
     for i, item in enumerate(expertise):
@@ -935,57 +867,43 @@ def render_home():
 
         with cols[i]:
             badge_html = "".join(
-                f'<span class="glow-badge" style="margin-right: 5px; margin-bottom: 5px; display: inline-block;">{safe_text(b)}</span>'
+                f"<span class='glow-badge' style='margin-right:5px; margin-bottom:5px; display:inline-block;'>{safe_text(b)}</span>"
                 for b in badges
             )
 
-            st.markdown(
-                f"""
-                <div class="glass-card" style="height: 100%;">
-                    <h3>{title_text}</h3>
-                    <p style="
-                        color:#94a3b8;
-                        line-height:1.6;
-                    ">
-                        {safe_text(description)}
-                    </p>
-                    {badge_html}
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                f"<div class='glass-card' style='height: 100%;'>"
+                f"<h3>{title_text}</h3>"
+                f"<p style='color:#94a3b8; line-height:1.6;'>{safe_text(description)}</p>"
+                f"{badge_html}"
+                f"</div>"
             )
+
+            st.markdown(card_html, unsafe_allow_html=True)
 
     # --------------------------------------
     # LEARNING WORKFLOW SECTION
     # --------------------------------------
     st.markdown("## 🔄 Learning & Security Workflow")
 
-    st.markdown(
-        """
-        <div class="glass-card">
-            <div style="
-                display:flex;
-                flex-wrap:wrap;
-                gap:10px;
-                align-items:center;
-                justify-content:center;
-            ">
-
-                <div class="glow-badge">📚 Learn</div>
-                <strong>→</strong>
-                <div class="glow-badge">🧪 Practice</div>
-                <strong>→</strong>
-                <div class="glow-badge">🌐 Configure</div>
-                <strong>→</strong>
-                <div class="glow-badge">🛡️ Secure</div>
-                <strong>→</strong>
-                <div class="glow-badge">🎯 Improve</div>
-
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    workflow_html = (
+        "<div class='glass-card'>"
+        "<div style='display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center;'>"
+        "<div class='glow-badge'>📚 Learn</div>"
+        "<strong>→</strong>"
+        "<div class='glow-badge'>🧪 Practice</div>"
+        "<strong>→</strong>"
+        "<div class='glow-badge'>🌐 Configure</div>"
+        "<strong>→</strong>"
+        "<div class='glow-badge'>🛡️ Secure</div>"
+        "<strong>→</strong>"
+        "<div class='glow-badge'>🎯 Improve</div>"
+        "</div>"
+        "</div>"
     )
+
+    st.markdown(workflow_html, unsafe_allow_html=True)
+    
 # ==========================================
 # SKILLS PAGE
 # ==========================================
