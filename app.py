@@ -994,7 +994,7 @@ def render_projects():
 
     st.title("🚀 Projects")
 
-    projects = get_projects()
+    projects = get_projects() or []  # None আসলে খালি লিস্ট ধরে নেবে
 
     if not projects:
         st.info("No projects available.")
@@ -1009,12 +1009,12 @@ def render_projects():
         )
 
     with col2:
-
         categories = sorted(
             list(
                 set(
                     p.get("category", "")
                     for p in projects
+                    if p.get("category")
                 )
             )
         )
@@ -1033,9 +1033,7 @@ def render_projects():
         ]
 
     if search:
-
         query = search.lower()
-
         filtered = [
             p for p in filtered
             if query in p.get("title", "").lower()
@@ -1048,16 +1046,8 @@ def render_projects():
 
     for project in filtered:
 
-        featured = (
-            " ⭐ Featured"
-            if project.get("featured")
-            else ""
-        )
-
-        technologies = project.get(
-            "technologies",
-            ""
-        )
+        featured = " ⭐ Featured" if project.get("featured") else ""
+        technologies = project.get("technologies", "")
 
         tech_html = "".join(
             f'<span class="tech-tag">{safe_text(t.strip())}</span>'
@@ -1065,42 +1055,23 @@ def render_projects():
             if t.strip()
         )
 
-        st.markdown(
-            f"""
-            <div class="project-card">
+        title_text = safe_text(project.get("title", ""))
+        category_text = safe_text(project.get("category", ""))
+        desc_text = safe_text(project.get("description", ""))
+        tech_content = tech_html if tech_html else "N/A"
 
-                <div class="project-title">
-                    {safe_text(project.get("title", ""))}
-                    {featured}
-                </div>
-
-                <span class="glow-badge">
-                    {safe_text(project.get("category", ""))}
-                </span>
-
-                <p style="
-                    color:#cbd5e1;
-                    line-height:1.6;
-                ">
-                    {safe_text(project.get("description", ""))}
-                </p>
-
-                <div>
-                    <strong style="color:#94a3b8;">
-                        TECHNOLOGIES
-                    </strong>
-                    <br>
-                    {tech_html if tech_html else "N/A"}
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
+        card_html = (
+            f"<div class='project-card'>"
+            f"<div class='project-title'>{title_text}{featured}</div>"
+            f"<span class='glow-badge'>{category_text}</span>"
+            f"<p style='color:#cbd5e1; line-height:1.6;'>{desc_text}</p>"
+            f"<div><strong style='color:#94a3b8;'>TECHNOLOGIES</strong><br>{tech_content}</div>"
+            f"</div>"
         )
 
-        with st.expander(
-            "📄 View Full Project Breakdown & Links"
-        ):
+        st.markdown(card_html, unsafe_allow_html=True)
+
+        with st.expander("📄 View Full Project Breakdown & Links"):
 
             fields = [
                 ("📌 Overview", "overview"),
@@ -1111,13 +1082,9 @@ def render_projects():
             ]
 
             for label, key in fields:
-
                 value = project.get(key)
-
                 if value:
-                    st.markdown(
-                        f"**{label}:** {safe_text(value)}"
-                    )
+                    st.markdown(f"**{label}:** {safe_text(value)}")
 
             github = project.get("github_url")
             demo = project.get("demo_url")
@@ -1125,48 +1092,24 @@ def render_projects():
             b1, b2 = st.columns(2)
 
             with b1:
-
                 if github:
-                    st.markdown(
-                        f"""
-                        <a href='{github}'
-                           target='_blank'
-                           style='
-                           display:block;
-                           text-align:center;
-                           padding:10px;
-                           background:#334155;
-                           color:white;
-                           border-radius:8px;
-                           text-decoration:none;'>
-                           🔗 GitHub Repository
-                        </a>
-                        """,
-                        unsafe_allow_html=True
+                    github_html = (
+                        f"<a href='{github}' target='_blank' "
+                        "style='display:block; text-align:center; padding:10px; "
+                        "background:#334155; color:white; border-radius:8px; text-decoration:none;'>"
+                        "🔗 GitHub Repository</a>"
                     )
+                    st.markdown(github_html, unsafe_allow_html=True)
 
             with b2:
-
                 if demo:
-                    st.markdown(
-                        f"""
-                        <a href='{demo}'
-                           target='_blank'
-                           style='
-                           display:block;
-                           text-align:center;
-                           padding:10px;
-                           background:#2563eb;
-                           color:white;
-                           border-radius:8px;
-                           text-decoration:none;'>
-                           🚀 Live Demo
-                        </a>
-                        """,
-                        unsafe_allow_html=True
+                    demo_html = (
+                        f"<a href='{demo}' target='_blank' "
+                        "style='display:block; text-align:center; padding:10px; "
+                        "background:#2563eb; color:white; border-radius:8px; text-decoration:none;'>"
+                        "🚀 Live Demo</a>"
                     )
-
-
+                    st.markdown(demo_html, unsafe_allow_html=True)
 # ==========================================
 # SERVICES PAGE
 # ==========================================
@@ -1174,7 +1117,7 @@ def render_services():
 
     st.title("💼 Services & Solutions")
 
-    services = get_services()
+    services = get_services() or []  # None আসলে খালি লিস্ট ধরে নেবে
 
     active_services = [
         s for s in services
@@ -1196,30 +1139,20 @@ def render_services():
             for item in items
         )
 
+        title_text = safe_text(service.get("title", ""))
+        desc_text = safe_text(service.get("description", ""))
+
         with cols[index % 2]:
-
-            st.markdown(
-                f"""
-                <div class="service-card">
-
-                    <div class="service-title">
-                        ⚡ {safe_text(service.get("title", ""))}
-                    </div>
-
-                    <div class="service-desc">
-                        {safe_text(service.get("description", ""))}
-                    </div>
-
-                    <ul class="service-list">
-                        {items_html}
-                    </ul>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            service_card_html = (
+                f"<div class='service-card'>"
+                f"<div class='service-title'>⚡ {title_text}</div>"
+                f"<div class='service-desc'>{desc_text}</div>"
+                f"<ul class='service-list'>{items_html}</ul>"
+                f"</div>"
             )
 
-
+            st.markdown(service_card_html, unsafe_allow_html=True)
+            
 # ==========================================
 # EXPERIENCE PAGE
 # ==========================================
@@ -1232,48 +1165,27 @@ def render_experience():
     # --------------------------------------
     st.markdown("### 🏢 Experience")
 
-    experiences = get_experience()
+    experiences = get_experience() or []
 
     if experiences:
-
-        st.markdown(
-            '<div class="timeline-wrapper">',
-            unsafe_allow_html=True
-        )
-
+        exp_cards_html = ""
         for exp in experiences:
+            pos = safe_text(exp.get("position", ""))
+            org = safe_text(exp.get("organization", ""))
+            start = safe_text(exp.get("start_date", ""))
+            end = safe_text(exp.get("end_date", ""))
+            desc = safe_text(exp.get("description", ""))
 
-            st.markdown(
-                f"""
-                <div class="timeline-card">
-
-                    <div class="exp-role">
-                        {safe_text(exp.get("position", ""))}
-                        <span class="exp-org">
-                            • {safe_text(exp.get("organization", ""))}
-                        </span>
-                    </div>
-
-                    <div class="exp-date">
-                        🗓️ {safe_text(exp.get("start_date", ""))}
-                        -
-                        {safe_text(exp.get("end_date", ""))}
-                    </div>
-
-                    <p class="exp-desc">
-                        {safe_text(exp.get("description", ""))}
-                    </p>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            exp_cards_html += (
+                f"<div class='timeline-card'>"
+                f"<div class='exp-role'>{pos} <span class='exp-org'>• {org}</span></div>"
+                f"<div class='exp-date'>🗓️ {start} - {end}</div>"
+                f"<p class='exp-desc'>{desc}</p>"
+                f"</div>"
             )
 
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
-
+        timeline_html = f"<div class='timeline-wrapper'>{exp_cards_html}</div>"
+        st.markdown(timeline_html, unsafe_allow_html=True)
     else:
         st.info("No experience listed.")
 
@@ -1284,42 +1196,25 @@ def render_experience():
     # --------------------------------------
     st.markdown("### 🎓 Learning Journey")
 
-    journey = get_learning_journey()
+    journey = get_learning_journey() or []
 
     if journey:
-
-        st.markdown(
-            '<div class="timeline-wrapper">',
-            unsafe_allow_html=True
-        )
-
+        journey_cards_html = ""
         for item in journey:
+            title = safe_text(item.get("title", ""))
+            desc = safe_text(item.get("description", ""))
 
-            st.markdown(
-                f"""
-                <div class="timeline-card">
-
-                    <div class="exp-role">
-                        {safe_text(item.get("title", ""))}
-                    </div>
-
-                    <p class="exp-desc">
-                        {safe_text(item.get("description", ""))}
-                    </p>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            journey_cards_html += (
+                f"<div class='timeline-card'>"
+                f"<div class='exp-role'>{title}</div>"
+                f"<p class='exp-desc'>{desc}</p>"
+                f"</div>"
             )
 
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
-
+        journey_html = f"<div class='timeline-wrapper'>{journey_cards_html}</div>"
+        st.markdown(journey_html, unsafe_allow_html=True)
     else:
         st.info("No learning journey listed.")
-
 
 # ==========================================
 # REVIEWS PAGE
@@ -1328,94 +1223,51 @@ def render_reviews():
 
     st.title("⭐ Reviews")
 
-    reviews = get_approved_reviews()
+    reviews = get_approved_reviews() or []  # None আসলে খালি লিস্ট ধরে নেবে
 
     if reviews:
-
         for review in reviews:
-
-            rating = int(
-                review.get("rating", 5)
-            )
-
+            rating = int(review.get("rating", 5))
             stars = "⭐" * rating
 
-            st.markdown(
-                f"""
-                <div class="review-card">
+            name_text = safe_text(review.get("name", ""))
+            role_text = safe_text(review.get("role", ""))
+            comment_text = safe_text(review.get("comment", ""))
 
-                    <h3>
-                        {safe_text(review.get("name", ""))}
-                    </h3>
-
-                    <p style="color:#60a5fa;">
-                        {safe_text(review.get("role", ""))}
-                    </p>
-
-                    <p>{stars}</p>
-
-                    <p style="
-                        color:#cbd5e1;
-                        line-height:1.6;
-                    ">
-                        {safe_text(review.get("comment", ""))}
-                    </p>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            review_card_html = (
+                f"<div class='review-card'>"
+                f"<h3>{name_text}</h3>"
+                f"<p style='color:#60a5fa;'>{role_text}</p>"
+                f"<p>{stars}</p>"
+                f"<p style='color:#cbd5e1; line-height:1.6;'>{comment_text}</p>"
+                f"</div>"
             )
 
+            st.markdown(review_card_html, unsafe_allow_html=True)
+
     else:
-        st.info(
-            "No approved reviews available yet."
-        )
+        st.info("No approved reviews available yet.")
 
     st.markdown("---")
 
     st.markdown("### ✍️ Leave a Review")
 
-    with st.form(
-        "public_review_form",
-        clear_on_submit=True
-    ):
+    with st.form("public_review_form", clear_on_submit=True):
 
-        name = st.text_input(
-            "Your Name"
-        )
+        name = st.text_input("Your Name")
+        role = st.text_input("Role / Position (Optional)")
+        rating = st.slider("Rating", min_value=1, max_value=5, value=5)
+        comment = st.text_area("Your Review")
 
-        role = st.text_input(
-            "Role / Position (Optional)"
-        )
-
-        rating = st.slider(
-            "Rating",
-            min_value=1,
-            max_value=5,
-            value=5
-        )
-
-        comment = st.text_area(
-            "Your Review"
-        )
-
-        submitted = st.form_submit_button(
-            "⭐ Submit Review",
-            use_container_width=True
-        )
+        submitted = st.form_submit_button("⭐ Submit Review", use_container_width=True)
 
         if submitted:
-
             if not name.strip():
                 st.error("Please enter your name.")
-
             elif not comment.strip():
                 st.error("Please write a review.")
-
             else:
-
                 try:
-
                     add_review(
                         {
                             "name": name.strip(),
@@ -1425,16 +1277,9 @@ def render_reviews():
                             "is_approved": False
                         }
                     )
-
-                    st.success(
-                        "✅ Review submitted. "
-                        "It will appear after approval."
-                    )
-
+                    st.success("✅ Review submitted. It will appear after approval.")
                 except Exception as e:
-                    st.error(
-                        f"Unable to submit review: {e}"
-                    )
+                    st.error(f"Unable to submit review: {e}")
 
 
 # ==========================================
@@ -1451,202 +1296,104 @@ def render_contact():
         return
 
     email = profile.get("email", "")
-    location = profile.get(
-        "location",
-        "Chattogram, Bangladesh"
-    )
+    location = profile.get("location", "Chattogram, Bangladesh")
 
-    col1, col2 = st.columns(
-        [1, 1],
-        gap="large"
-    )
+    col1, col2 = st.columns([1, 1], gap="large")
 
     # --------------------------------------
     # CONTACT INFO
     # --------------------------------------
     with col1:
 
-        st.markdown(
-            f"""
-            <div class="contact-card">
+        loc_text = safe_text(location)
+        email_text = safe_text(email)
 
-                <div class="contact-title">
-                    📌 Direct Contact Info
-                </div>
-
-                <p style="color:#cbd5e1;">
-                    📍 <strong>Location:</strong>
-                    {safe_text(location)}
-                </p>
-
-                <p style="color:#cbd5e1;">
-                    📧 <strong>Email:</strong>
-                    {safe_text(email)}
-                </p>
-
-                <a href="mailto:{email}"
-                   style="
-                   display:block;
-                   text-align:center;
-                   background:#2563eb;
-                   color:white;
-                   padding:10px;
-                   border-radius:8px;
-                   text-decoration:none;
-                   font-weight:600;">
-                   ✉️ Open Mail App
-                </a>
-
-            </div>
-            """,
-            unsafe_allow_html=True
+        direct_contact_html = (
+            f"<div class='contact-card'>"
+            f"<div class='contact-title'>📌 Direct Contact Info</div>"
+            f"<p style='color:#cbd5e1;'>📍 <strong>Location:</strong> {loc_text}</p>"
+            f"<p style='color:#cbd5e1;'>📧 <strong>Email:</strong> {email_text}</p>"
+            f"<a href='mailto:{email}' target='_blank' "
+            "style='display:block; text-align:center; background:#2563eb; color:white; "
+            "padding:10px; border-radius:8px; text-decoration:none; font-weight:600;'>"
+            "✉️ Open Mail App</a>"
+            f"</div>"
         )
 
-        socials = get_social_links()
+        st.markdown(direct_contact_html, unsafe_allow_html=True)
 
-        st.markdown(
-            '<div class="contact-card">',
-            unsafe_allow_html=True
-        )
+        socials = get_social_links() or []
 
-        st.markdown(
-            '<div class="contact-title">🔗 Social Profiles</div>',
-            unsafe_allow_html=True
-        )
-
+        social_links_html = ""
         for social in socials:
-
             if social.get("active", True):
+                url = social.get("url", "")
+                label = safe_text(social.get("label", ""))
 
-                st.markdown(
-                    f"""
-                    <a href='{social.get('url', '')}'
-                       target='_blank'
-                       style='
-                       display:block;
-                       background:rgba(59,130,246,0.1);
-                       color:#60a5fa;
-                       padding:10px 16px;
-                       border-radius:10px;
-                       margin-bottom:10px;
-                       text-decoration:none;
-                       font-weight:600;'>
-                       🌐 {safe_text(social.get('label', ''))}
-                    </a>
-                    """,
-                    unsafe_allow_html=True
+                social_links_html += (
+                    f"<a href='{url}' target='_blank' "
+                    "style='display:block; background:rgba(59,130,246,0.1); color:#60a5fa; "
+                    "padding:10px 16px; border-radius:10px; margin-bottom:10px; "
+                    f"text-decoration:none; font-weight:600;'>🌐 {label}</a>"
                 )
 
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
+        social_card_html = (
+            f"<div class='contact-card'>"
+            f"<div class='contact-title'>🔗 Social Profiles</div>"
+            f"{social_links_html}"
+            f"</div>"
         )
+
+        st.markdown(social_card_html, unsafe_allow_html=True)
 
     # --------------------------------------
     # EMAIL FORM
     # --------------------------------------
     with col2:
 
-        st.markdown(
-            '<div class="contact-card">',
-            unsafe_allow_html=True
-        )
+        st.markdown("<div class='contact-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='contact-title'>💬 Send a Message</div>", unsafe_allow_html=True)
 
-        st.markdown(
-            '<div class="contact-title">💬 Send a Message</div>',
-            unsafe_allow_html=True
-        )
+        with st.form("contact_form", clear_on_submit=True):
 
-        with st.form(
-            "contact_form",
-            clear_on_submit=True
-        ):
+            sender_name = st.text_input("Name", placeholder="Enter your full name")
+            sender_email = st.text_input("Email", placeholder="Enter your email address")
+            message = st.text_area("Your Message", height=150)
 
-            sender_name = st.text_input(
-                "Name",
-                placeholder="Enter your full name"
-            )
-
-            sender_email = st.text_input(
-                "Email",
-                placeholder="Enter your email address"
-            )
-
-            message = st.text_area(
-                "Your Message",
-                height=150
-            )
-
-            submit = st.form_submit_button(
-                "📩 Generate Email",
-                use_container_width=True
-            )
+            submit = st.form_submit_button("📩 Generate Email", use_container_width=True)
 
             if submit:
-
                 if not sender_name.strip():
                     st.error("Please enter your name.")
-
-                elif not is_valid_email(
-                    sender_email.strip()
-                ):
-                    st.error(
-                        "Please enter a valid email."
-                    )
-
+                elif not is_valid_email(sender_email.strip()):
+                    st.error("Please enter a valid email.")
                 elif not message.strip():
-                    st.error(
-                        "Please enter your message."
-                    )
-
+                    st.error("Please enter your message.")
                 else:
-
                     import urllib.parse
 
-                    subject = urllib.parse.quote(
-                        f"Portfolio Message from {sender_name}"
-                    )
-
+                    subject = urllib.parse.quote(f"Portfolio Message from {sender_name}")
                     body = urllib.parse.quote(
                         f"Name: {sender_name}\n"
                         f"Email: {sender_email}\n\n"
                         f"Message:\n{message}"
                     )
 
-                    mailto = (
-                        f"mailto:{email}"
-                        f"?subject={subject}"
-                        f"&body={body}"
+                    mailto = f"mailto:{email}?subject={subject}&body={body}"
+
+                    st.success("Your email is ready.")
+
+                    btn_html = (
+                        f"<a href='{mailto}' target='_blank' "
+                        "style='display:block; text-align:center; background:#22c55e; "
+                        "color:white; padding:12px; border-radius:8px; "
+                        "text-decoration:none; font-weight:700;'>"
+                        "🚀 Open Email & Send</a>"
                     )
 
-                    st.success(
-                        "Your email is ready."
-                    )
+                    st.markdown(btn_html, unsafe_allow_html=True)
 
-                    st.markdown(
-                        f"""
-                        <a href='{mailto}'
-                           target='_blank'
-                           style='
-                           display:block;
-                           text-align:center;
-                           background:#22c55e;
-                           color:white;
-                           padding:12px;
-                           border-radius:8px;
-                           text-decoration:none;
-                           font-weight:700;'>
-                           🚀 Open Email & Send
-                        </a>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
-
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
 # ADMIN PAGE
